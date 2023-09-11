@@ -6,12 +6,9 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import sptech.picme.instagramapi.model.AccessToken;
+import sptech.picme.instagramapi.model.*;
 import reactor.core.publisher.Mono;
 import org.springframework.web.reactive.function.BodyInserters;
-import sptech.picme.instagramapi.model.ItemData;
-import sptech.picme.instagramapi.model.ListData;
-import sptech.picme.instagramapi.model.Media;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -140,6 +137,62 @@ public class InstagramService {
         }
 
         return listMedia;
+
+    }
+
+    @Operation(summary = "Obter access token de longa duração do usuário do instagram")
+    public Mono<LongAccessToken> getLongAccessToken(String accessToken) {
+
+        String endpoint_insta = String.format("https://graph.instagram.com/access_token?grant_type=%s&client_secret=%s&access_token=%s", "ig_exchange_token", picme_secret, accessToken);
+
+        return webClient.get()
+                .uri(endpoint_insta)
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(LongAccessToken.class)
+                .onErrorResume(e -> {
+                    if (e instanceof WebClientResponseException) {
+                        WebClientResponseException responseException = (WebClientResponseException) e;
+                        String responseBody = new String(responseException.getResponseBodyAsByteArray());
+                        System.out.println(responseBody);
+                    }
+                    return Mono.error(e);
+                })
+                .map(response -> {
+                    LongAccessToken newAccessToken = new LongAccessToken();
+                    newAccessToken.setAccess_token(response.getAccess_token());
+                    newAccessToken.setToken_type(response.getToken_type());
+                    newAccessToken.setExpires_in(response.getExpires_in());
+                    return newAccessToken;
+                });
+
+    }
+
+    @Operation(summary = "Renovar access token de longa duração do usuário do instagram")
+    public Mono<LongAccessToken> getRefreshLongAccessToken(String accessToken) {
+
+        String endpoint_insta = String.format("https://graph.instagram.com/refresh_access_token?grant_type=%s&access_token=%s", "ig_refresh_token", accessToken);
+
+        return webClient.get()
+                .uri(endpoint_insta)
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(LongAccessToken.class)
+                .onErrorResume(e -> {
+                    if (e instanceof WebClientResponseException) {
+                        WebClientResponseException responseException = (WebClientResponseException) e;
+                        String responseBody = new String(responseException.getResponseBodyAsByteArray());
+                        System.out.println(responseBody);
+                    }
+                    return Mono.error(e);
+                })
+                .map(response -> {
+                    LongAccessToken newAccessToken = new LongAccessToken();
+                    newAccessToken.setAccess_token(response.getAccess_token());
+                    newAccessToken.setToken_type(response.getToken_type());
+                    newAccessToken.setExpires_in(response.getExpires_in());
+                    return newAccessToken;
+                });
 
     }
 
