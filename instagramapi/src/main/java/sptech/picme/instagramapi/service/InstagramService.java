@@ -22,7 +22,7 @@ public class InstagramService {
     String picme_id = "1556911098134262";
     String picme_secret = "9e25f1e49cf74a41f362317268f06c5c";
     String grant_type = "authorization_code";
-    String redirect_uri = "https://2-cco-grupo-4.github.io/site-instituicional/";
+    String redirect_uri = "https://picme.app.br/insta-redirect/";
 
     private final WebClient webClient;
 
